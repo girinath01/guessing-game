@@ -25,7 +25,7 @@ def calculate_optimal_attempts():
     return math.ceil(math.log2(range_size))
 initialize_game_state()
 st.title("Number Guessing Game with Optimal Attempt Challenge")
-with slidebar:
+with st.slidebar:
     mode = st.radio("Select Game Mode", ("User Guessing", "Machine Guessing"))
 min_value = st.number_input("Enter minimum value:", min_value=1, value=st.session_state.min_value, step=1)
 max_value = st.number_input("Enter maximum value:", value=st.session_state.max_value, step=1)
