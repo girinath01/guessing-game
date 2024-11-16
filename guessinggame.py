@@ -1,78 +1,66 @@
 import streamlit as st
 import random
-import math
-
-def initialize_game_state():
-    st.session_state.setdefault('mode', 'User Guessing')
-    st.session_state.setdefault('min_value', 1)
-    st.session_state.setdefault('max_value', 100)
-    st.session_state.setdefault('number_to_guess', random.randint(st.session_state.min_value, st.session_state.max_value))
-    st.session_state.setdefault('user_feedback', f"Guess a number between {st.session_state.min_value} and {st.session_state.max_value}!")
-    st.session_state.setdefault('attempts', 0)
-    st.session_state.setdefault('computer_low', st.session_state.min_value)
-    st.session_state.setdefault('computer_high', st.session_state.max_value)
-    st.session_state.setdefault('computer_feedback', "")
-
-def reset_game_state():
-    st.session_state.number_to_guess = random.randint(st.session_state.min_value, st.session_state.max_value)
-    st.session_state.attempts = 0
-    st.session_state.computer_low = st.session_state.min_value
-    st.session_state.computer_high = st.session_state.max_value
-    st.session_state.computer_feedback = "Game reset. Think of a new number within the updated range!"
-
-def calculate_optimal_attempts():
-    range_size = st.session_state.max_value - st.session_state.min_value + 1
-    return math.ceil(math.log2(range_size))
-initialize_game_state()
-st.title("Number Guessing Game with Optimal Attempt Challenge")
-with st.slidebar:
-    mode = st.radio("Select Game Mode", ("User Guessing", "Machine Guessing"))
-min_value = st.number_input("Enter minimum value:", min_value=1, value=st.session_state.min_value, step=1)
-max_value = st.number_input("Enter maximum value:", value=st.session_state.max_value, step=1)
-if max_value <= min_value:
-    st.warning("Maximum value should be greater than minimum value. Setting it to minimum + 1.")
-    max_value = min_value + 1
-if min_value != st.session_state.min_value or max_value != st.session_state.max_value:
-    st.session_state.min_value = min_value
-    st.session_state.max_value = max_value
-    reset_game_state()
-    st.session_state.user_feedback = f"New range set! Guess a number between {st.session_state.min_value} and {st.session_state.max_value}."
-optimal_attempts = calculate_optimal_attempts()
-if mode == "User Guessing":
-    st.write("User Guessing Mode: Try to guess the number I'm thinking of!")
-    st.write(f"Optimal attempts: {optimal_attempts}")
-    guess = st.number_input("Enter your guess:", min_value=st.session_state.min_value, max_value=st.session_state.max_value, step=1)
-    if st.button("Submit Guess"):
+st.sidebar.header("Welcome")
+page=st.sidebar.radio("Games",["User guessing game","machine guessing game"])
+if page=='User guessing game':
+    start_range=st.number_input("Enter starting range:",min_value=1,max_value=100)
+    end_range=st.number_input("Enter ending range:",min_value=1,max_value=100)
+    if start_range>=end_range:
+        st.write("starting range is less than ending range")
+    else:
+        if'number_to_guess' not in st.session_state:
+            st.session_state.number_to_guess = random.randint(start_range,end_range)
+            st.session_state.attempts = 0
+            st.session_state.game_started=True
+    st.title("Number Guessing Game ")
+    st.write(f"I'm thinking of a number between{start_range}and{end_range}. Can you guess it?")
+    guess = st.number_input("Enter your guess:", min_value=1, max_value=100)
+    if st.button("Guess"):
         st.session_state.attempts += 1
         if guess < st.session_state.number_to_guess:
-            st.session_state.user_feedback = "Too low! Try again."
+            st.write(" Too low! Try again.")
         elif guess > st.session_state.number_to_guess:
-            st.session_state.user_feedback = "Too high! Try again."
+            st.write("Too high! Try again.")
         else:
-            st.session_state.user_feedback = f"Congratulations! You guessed it in {st.session_state.attempts} attempts."
-            if st.session_state.attempts <= optimal_attempts:
-                st.session_state.user_feedback += " Great job! You guessed it within the optimal number of attempts!"
-            else:
-                st.session_state.user_feedback += " You exceeded the optimal attempts. Try to guess more efficiently next time!"
-            reset_game_state()
-    st.write(st.session_state.user_feedback)
-else:
-    st.write("Machine Guessing Mode: Think of a number within the range, and I'll try to guess it!")
+            st.write(f"Congratulations! You've guessed the number in {st.session_state.attempts} attempts!")
 
-    st.session_state.computer_guess = (st.session_state.computer_low + st.session_state.computer_high) // 2
-    st.write(f"My guess is: {st.session_state.computer_guess}")
-    feedback = st.radio("Is my guess correct?", ("Too low", "Too high", "Correct"))
-    if st.button("Submit Feedback"):
-        if feedback == "Too low":
-            st.session_state.computer_low = st.session_state.computer_guess + 1
-            st.session_state.computer_feedback = "I'll try higher."
-        elif feedback == "Too high":
-            st.session_state.computer_high = st.session_state.computer_guess - 1
-            st.session_state.computer_feedback = "I'll try lower."
+elif page=='machine guessing game':
+
+    if "min_value" not in st.session_state:
+        st.session_state.min_value = 1
+        st.session_state.max_value = 100
+        st.session_state.attempts = 0
+        st.session_state.machine_guess = (st.session_state.min_value + st.session_state.max_value) // 2
+        st.session_state.game_active = False
+    st.title("Simple Machine Guessing Game")
+    st.write("Think of a number within the range you set, and the machine will try to guess it!")
+    min_value = st.number_input("Enter the minimum value for the range:", value=1)
+    max_value = st.number_input("Enter the maximum value for the range:", value=100)
+    if st.button("Start Game"):
+        if min_value >= max_value:
+            st.write("Minimum value must be less than the maximum value.")
         else:
-            st.session_state.computer_feedback = "I guessed it! Let's play again!"
-            reset_game_state()
-    st.session_state.computer_guess = (st.session_state.computer_low + st.session_state.computer_high) // 2
-    st.write(st.session_state.computer_feedback)
-if st.button("Reset Game"):
-    reset_game_state()
+            
+            st.session_state.min_value = min_value
+            st.session_state.max_value = max_value
+            st.session_state.attempts = 1
+            st.session_state.machine_guess = (min_value + max_value) // 2
+            st.session_state.game_active = True
+            st.write(f"The machine's guess is {st.session_state.machine_guess}")
+
+    if st.session_state.game_active:
+        feedback = st.radio("How is the machine's guess?", ("Correct", "Too Low", "Too High"))
+
+        if st.button("Submit Feedback"):
+            if feedback == "Correct":
+                st.write(f"The machine guessed it! The number was {st.session_state.machine_guess}.")
+                st.write(f"Attempts: {st.session_state.attempts}")
+                st.session_state.game_active = False 
+            else:
+                if feedback == "Too Low":
+                    st.session_state.min_value = st.session_state.machine_guess + 1
+                elif feedback == "Too High":
+                    st.session_state.max_value = st.session_state.machine_guess - 1
+                st.session_state.machine_guess = (st.session_state.min_value + st.session_state.max_value) // 2
+                st.session_state.attempts += 1
+                st.write(f"The machine's new guess is {st.session_state.machine_guess}")
