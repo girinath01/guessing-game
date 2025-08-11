@@ -33,7 +33,7 @@ elif page=='machine guessing game':
         st.session_state.machine_guess = (st.session_state.min_value + st.session_state.max_value) // 2
         st.session_state.game_active = False
     st.title("Simple Machine Guessing Game")
-    st.write("Think of a number within the range you set, and the machine will try to guess it!")
+    st.write("Think of a number within the range you set,  the machine will try to guess it!")
     min_value = st.number_input("Enter the minimum value for the range:", value=1)
     max_value = st.number_input("Enter the maximum value for the range:", value=100)
     if st.button("Start Game"):
